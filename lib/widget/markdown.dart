@@ -6,6 +6,8 @@ import 'package:markdown_widget/markdown_widget.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
+import '../models/comment.dart';
+
 class MarkdownWidget extends StatefulWidget {
   ///the markdown data
   final String data;
@@ -119,9 +121,17 @@ class MarkdownWidgetState extends State<MarkdownWidget> {
         shrinkWrap: widget.shrinkWrap,
         physics: widget.physics,
         controller: controller,
-        itemBuilder: (ctx, index) => wrapByAutoScroll(index,
-            wrapByVisibilityDetector(index, _widgets[index]), controller),
-        itemCount: _widgets.length,
+        itemBuilder: (ctx, index) {
+          if (index == _widgets.length) {
+            // This is the last index, return the comment form widget
+            return _buildCommentForm();
+          } else {
+            // Return the original widget wrapped with auto scroll and visibility detector
+            return wrapByAutoScroll(index,
+                wrapByVisibilityDetector(index, _widgets[index]), controller);
+          }
+        },
+        itemCount: _widgets.length + 1, // Add 1 for the comment form
         padding: widget.padding,
       ),
     );
@@ -150,6 +160,85 @@ class MarkdownWidgetState extends State<MarkdownWidget> {
         }
       },
       child: child,
+    );
+  }
+
+  Widget _buildCommentForm() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Text(
+            'Leave a Comment',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onBackground,
+                ),
+          ),
+          SizedBox(height: 8),
+          TextField(
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Author Name',
+              hintText: 'Enter your name',
+              fillColor: Theme.of(context).colorScheme.surface,
+              filled: true,
+            ),
+            keyboardType: TextInputType.name,
+          ),
+          SizedBox(height: 8),
+          TextField(
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              hintText: 'Enter your comment here',
+              fillColor: Theme.of(context).colorScheme.surface,
+              filled: true,
+            ),
+            keyboardType: TextInputType.multiline,
+            maxLines: null,
+          ),
+          SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              // TODO: Implement comment submission logic
+            },
+            child: Text('Submit'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCommentsSection() {
+    // TODO: Fetch comments from Firebase and build the list
+    return FutureBuilder(
+      // Your Firebase comments fetching logic goes here
+      future: null,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error fetching comments'));
+        } else {
+          // Assuming your comments are in 'snapshot.data'
+          final comments = snapshot.data as List<Comment>;
+          return ListView.builder(
+            itemCount: comments.length,
+            itemBuilder: (context, index) {
+              final comment = comments[index];
+              return ListTile(
+                title: Text(comment.authorName),
+                subtitle: Text(comment.content),
+                leading: Icon(Icons.comment),
+              );
+            },
+          );
+        }
+      },
     );
   }
 
