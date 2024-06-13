@@ -12,7 +12,7 @@ class Comment {
     required this.authorName,
     required this.content,
     required this.createdTime,
-    required this.replies,
+    this.replies = const [],
   });
 
   @override
@@ -49,8 +49,8 @@ class Comment {
       authorName: map['authorName'] ?? '',
       content: map['content'] ?? '',
       createdTime: DateTime.fromMillisecondsSinceEpoch(map['createdTime']),
-      replies:
-          List<Comment>.from(map['replies']?.map((x) => Comment.fromMap(x))),
+      replies: List<Comment>.from(
+          map['replies']?.map((x) => Comment.fromMap(x)) ?? []),
     );
   }
 
