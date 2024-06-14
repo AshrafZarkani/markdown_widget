@@ -48,7 +48,10 @@ class Comment {
       id: map['id'] ?? '',
       authorName: map['authorName'] ?? '',
       content: map['content'] ?? '',
-      createdTime: DateTime.fromMillisecondsSinceEpoch(map['createdTime']),
+      createdTime: map['createdTime'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(map['createdTime'])
+          : DateTime
+              .now(), // Provide a default value in case 'createdTime' is null
       replies: List<Comment>.from(
           map['replies']?.map((x) => Comment.fromMap(x)) ?? []),
     );
